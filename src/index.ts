@@ -33,7 +33,7 @@ privateState.storage = null;
 privateState.initStoreCalled = false;
 privateState.storageKey = "react-rlax-store";
 
-function initStore(opt: InitStoreOption) {
+export function initStore(opt: InitStoreOption) {
   if (privateState.initStoreCalled) {
     return;
   }
@@ -56,7 +56,7 @@ function initStore(opt: InitStoreOption) {
   persist(opt.persist);
 }
 
-function setStore(key: string, val: any) {
+export function setStore(key: string, val: any) {
   const store = privateState.stores[key];
   if (!store) {
     privateState.stores[key] = {
@@ -76,7 +76,7 @@ function setStore(key: string, val: any) {
   }
 }
 
-function useStore(key: string) {
+export function useStore(key: string) {
   const render = useState(0)[1];
   useDebugValue(`Store of ${String(key)}`);
   const store = privateState.stores[key];
@@ -141,7 +141,7 @@ function persist(type: PersistType) {
   });
 }
 
-function clear() {
+export function clear() {
   privateState.initStoreCalled = false;
   privateState.stores = Object.create(null);
   privateState.storage?.removeItem(privateState.storageKey);

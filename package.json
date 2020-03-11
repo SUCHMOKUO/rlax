@@ -1,11 +1,11 @@
 {
   "name": "rlax",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Rlax is a super easy state with persistence for react.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "prepublish": "tsc",
+    "pub": "npm run build && npm publish",
     "build": "tsc",
     "test": "tsc && jest --coverage"
   },
