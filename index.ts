@@ -18,15 +18,26 @@ interface InitStoreOption {
   persist: PersistType;
 }
 
-let stores: Stores = Object.create(null);
-let storage: Storage;
-let initStoreCalled = false;
+interface IPrivateState {
+  stores: Stores;
+  storage: Storage | null;
+  initStoreCalled: boolean;
+  storageKey: string;
+  [key: string]: any;
+}
+
+const privateState: IPrivateState = Object.create(null);
+
+privateState.stores = Object.create(null);
+privateState.storage = null;
+privateState.initStoreCalled = false;
+privateState.storageKey = "react-rlax-store";
 
 function initStore(opt: InitStoreOption) {
-  if (initStoreCalled) {
+  if (privateState.initStoreCalled) {
     return;
   }
-  initStoreCalled = true;
+  privateState.initStoreCalled = true;
   if (!opt) {
     throw new Error("You need to pass an option object to initStore!");
   }
@@ -46,9 +57,9 @@ function initStore(opt: InitStoreOption) {
 }
 
 function setStore(key: string, val: any) {
-  const store = stores[key];
+  const store = privateState.stores[key];
   if (!store) {
-    stores[key] = {
+    privateState.stores[key] = {
       value: val,
       renderList: [],
     };
@@ -68,7 +79,7 @@ function setStore(key: string, val: any) {
 function useStore(key: string) {
   const render = useState(0)[1];
   useDebugValue(`Store of ${String(key)}`);
-  const store = stores[key];
+  const store = privateState.stores[key];
   if (!store) {
     throw new Error(`No store named ${String(key)}!`);
   }
@@ -88,19 +99,17 @@ function useStore(key: string) {
   return store.value;
 }
 
-const storageKey = "react-rlax-store";
-
 function persist(type: PersistType) {
   switch (type) {
     case "none":
       return;
 
     case "local":
-      storage = window.localStorage;
+      privateState.storage = window.localStorage;
       break;
 
     case "session":
-      storage = window.sessionStorage;
+      privateState.storage = window.sessionStorage;
       break;
 
     default:
@@ -108,30 +117,35 @@ function persist(type: PersistType) {
   }
 
   // restore from web storage.
-  const storeStr = storage.getItem(storageKey);
+  const storeStr = privateState.storage.getItem(privateState.storageKey);
   if (storeStr) {
-    Object.assign(stores, JSON.parse(storeStr));
+    const data = JSON.parse(storeStr);
+    for (const [k, v] of Object.entries(data)) {
+      privateState.stores[k] = {
+        value: v,
+        renderList: [],
+      };
+    }
   }
 
   // register callback to store everything before reload.
   window.addEventListener("beforeunload", () => {
-    storage.setItem(storageKey, JSON.stringify(stores, jsonReplacer));
+    const data = Object.create(null);
+    for (let k in privateState.stores) {
+      data[k] = privateState.stores[k].value;
+    }
+    privateState.storage?.setItem(
+      privateState.storageKey,
+      JSON.stringify(data)
+    );
   });
 }
 
-function jsonReplacer(name: string, val: any) {
-  if (name === "renderList") {
-    return [];
-  }
-  return val;
-}
-
 function clear() {
-  initStoreCalled = false;
-  stores = Object.create(null);
-  if (storage) {
-    storage.removeItem(storageKey);
-  }
+  privateState.initStoreCalled = false;
+  privateState.stores = Object.create(null);
+  privateState.storage?.removeItem(privateState.storageKey);
+  privateState.storage = null;
 }
 
 export default {
@@ -140,3 +154,21 @@ export default {
   useStore,
   clear,
 };
+
+export function _debugSetPrivateState(key: string, val: any) {
+  /* istanbul ignore next */
+
+  if (!(key in privateState)) {
+    throw new ReferenceError(`No field named ${key}!`);
+  }
+  privateState[key] = val;
+}
+
+export function _debugGetPrivateState(key: string) {
+  /* istanbul ignore next */
+
+  if (!(key in privateState)) {
+    throw new ReferenceError(`No field named ${key}!`);
+  }
+  return privateState[key];
+}

@@ -1,0 +1,51 @@
+{
+  "name": "rlax",
+  "version": "1.0.0",
+  "description": "Rlax is a super easy state with persistence for react.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "prepublish": "tsc",
+    "build": "tsc",
+    "test": "tsc && jest --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SUCHMOKUO/rlax.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SUCHMOKUO/rlax/issues"
+  },
+  "homepage": "https://github.com/SUCHMOKUO/rlax#readme",
+  "keywords": [
+    "react",
+    "redux",
+    "state",
+    "store",
+    "persistence",
+    "localStorage",
+    "sessionStorage",
+    "typescript"
+  ],
+  "author": "mokuo",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^16.8.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.7",
+    "@babel/preset-env": "^7.8.7",
+    "@babel/preset-react": "^7.8.3",
+    "@types/react": "^16.9.23",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.2",
+    "husky": "^4.2.3",
+    "jest": "^25.1.0",
+    "jest-localstorage-mock": "^2.4.0",
+    "prettier": "1.19.1",
+    "pretty-quick": "^2.0.1",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
+    "typescript": "^3.8.3"
+  }
+}
