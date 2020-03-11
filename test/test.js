@@ -14,7 +14,7 @@ function clearWindowHandlers() {
   windowEventHandlers = Object.create(null);
 }
 
-import rlax, { _debugSetPrivateState, _debugGetPrivateState } from "./dist";
+import rlax, { _debugSetPrivateState, _debugGetPrivateState } from "../dist";
 
 const storageKey = _debugGetPrivateState("storageKey");
 
