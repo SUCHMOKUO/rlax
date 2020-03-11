@@ -5,6 +5,7 @@ node_js:
 
 script:
   - npm install coveralls --save-dev
+  - npm run build
   - jest --coverage --coverageReporters=text-lcov | coveralls
 
 cache:
