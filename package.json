@@ -1,6 +1,6 @@
 {
   "name": "rlax",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Rlax is a super easy state with persistence for react.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,10 +19,14 @@
   "homepage": "https://github.com/SUCHMOKUO/rlax#readme",
   "keywords": [
     "react",
+    "reactjs",
+    "hook",
     "redux",
     "state",
+    "state management",
     "store",
     "persistence",
+    "Web Storage",
     "localStorage",
     "sessionStorage",
     "typescript"
