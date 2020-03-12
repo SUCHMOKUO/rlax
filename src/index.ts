@@ -1,7 +1,15 @@
 import React, { useState, useDebugValue, useEffect } from "react";
 
+type StoreValue =
+  | number
+  | string
+  | boolean
+  | null
+  | { [key: string]: StoreValue }
+  | StoreValue[];
+
 type Store = {
-  value: any;
+  value: StoreValue;
   renderList: React.Dispatch<React.SetStateAction<number>>[];
 };
 
@@ -13,7 +21,7 @@ type PersistType = "none" | "local" | "session";
 
 interface InitStoreOption {
   data: {
-    [key: string]: any;
+    [key: string]: StoreValue;
   };
   persist: PersistType;
 }
@@ -21,7 +29,7 @@ interface InitStoreOption {
 interface IPrivateState {
   stores: Stores;
   storage: Storage | null;
-  initStoreCalled: boolean;
+  initialized: boolean;
   storageKey: string;
   [key: string]: any;
 }
@@ -30,14 +38,13 @@ const privateState: IPrivateState = Object.create(null);
 
 privateState.stores = Object.create(null);
 privateState.storage = null;
-privateState.initStoreCalled = false;
+privateState.initialized = false;
 privateState.storageKey = "react-rlax-store";
 
 export function initStore(opt: InitStoreOption) {
-  if (privateState.initStoreCalled) {
+  if (privateState.initialized) {
     return;
   }
-  privateState.initStoreCalled = true;
   if (!opt) {
     throw new Error("You need to pass an option object to initStore!");
   }
@@ -54,34 +61,55 @@ export function initStore(opt: InitStoreOption) {
     setStore(key, val);
   }
   persist(opt.persist);
+  privateState.initialized = true;
 }
 
-export function setStore(key: string, val: any) {
+export function setStore(
+  key: string,
+  setter: (prev: StoreValue) => StoreValue
+): void;
+export function setStore(key: string, val: StoreValue): void;
+export function setStore(key: string, val: any): void {
   const store = privateState.stores[key];
   if (!store) {
+    if (privateState.initialized) {
+      throw new Error(`No store named '${key}'!`);
+    }
+    if (val === undefined) {
+      throw new TypeError(`The value setting to '${key}' is undefined!`);
+    }
     privateState.stores[key] = {
       value: val,
       renderList: [],
     };
     return;
   }
-  if (store.value === val) {
+  const oldVal = store.value;
+  const newVal = typeof val === "function" ? val(oldVal) : val;
+  if (newVal === undefined) {
+    throw new TypeError(`The value setting to '${key}' is undefined!`);
+  }
+  if (oldVal === newVal) {
     return;
   }
   // set new value to store.
-  store.value = val;
+  store.value = newVal;
   // rerender all components that use this store.
   for (const render of store.renderList) {
-    render((prev) => prev + 1);
+    render(add);
   }
+}
+
+function add(x: number) {
+  return x + 1;
 }
 
 export function useStore(key: string) {
   const render = useState(0)[1];
-  useDebugValue(`Store of ${String(key)}`);
+  useDebugValue(`Store of '${key}'`);
   const store = privateState.stores[key];
   if (!store) {
-    throw new Error(`No store named ${String(key)}!`);
+    throw new Error(`No store named '${key}'!`);
   }
   const renderList = store.renderList;
   if (!renderList.includes(render)) {
@@ -113,7 +141,7 @@ function persist(type: PersistType) {
       break;
 
     default:
-      throw new Error(`Unknown persist type: ${type}!`);
+      throw new Error(`Unknown persist type: '${type}'!`);
   }
 
   // restore from web storage.
@@ -122,7 +150,7 @@ function persist(type: PersistType) {
     const data = JSON.parse(storeStr);
     for (const [k, v] of Object.entries(data)) {
       privateState.stores[k] = {
-        value: v,
+        value: v as StoreValue,
         renderList: [],
       };
     }
@@ -142,7 +170,7 @@ function persist(type: PersistType) {
 }
 
 export function clear() {
-  privateState.initStoreCalled = false;
+  privateState.initialized = false;
   privateState.stores = Object.create(null);
   privateState.storage?.removeItem(privateState.storageKey);
   privateState.storage = null;
@@ -159,7 +187,7 @@ export function _debugSetPrivateState(key: string, val: any) {
   /* istanbul ignore next */
 
   if (!(key in privateState)) {
-    throw new ReferenceError(`No field named ${key}!`);
+    throw new ReferenceError(`No field named '${key}'!`);
   }
   privateState[key] = val;
 }
@@ -168,7 +196,7 @@ export function _debugGetPrivateState(key: string) {
   /* istanbul ignore next */
 
   if (!(key in privateState)) {
-    throw new ReferenceError(`No field named ${key}!`);
+    throw new ReferenceError(`No field named '${key}'!`);
   }
   return privateState[key];
 }

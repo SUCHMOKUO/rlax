@@ -16,7 +16,7 @@ Rlax is a super easy state with persistence for react.
 
 ## Why you might want this:
 
-- It's tiny: **~100 loc**.
+- It's tiny: **~200 loc**.
 - It has **minimal and intuitive api**.
 - You just want a global state manager with persistence **out of box**.
 - **TypeScript** support.
@@ -80,6 +80,13 @@ import { setStore } from "rlax";
 
 const newValue1 = getYourNewValueSomehow();
 setStore("key1", newValue1);
+
+// or using a setter callback function to get previous value.
+setStore("key1", (prev) => {
+  const newValue = doSomethingWithPreviousValue(prev);
+  // remember to return new value.
+  return newValue;
+});
 
 // after setting new value,
 // all the component that use this value will rerender automatically,

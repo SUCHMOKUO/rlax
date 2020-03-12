@@ -57,12 +57,23 @@ describe("invalid option tests", () => {
         data: {},
         persist: invalidType,
       });
-    }).toThrowError(`Unknown persist type: ${invalidType}!`);
+    }).toThrowError(`Unknown persist type: '${invalidType}'!`);
   });
 });
 
 describe("initStore tests", () => {
   afterEach(rlax.clear);
+
+  test("should throw when initialize data with undefined", () => {
+    expect(() => {
+      rlax.initStore({
+        data: {
+          n: undefined,
+        },
+        persist: "none",
+      });
+    }).toThrowError("The value setting to 'n' is undefined!");
+  });
 
   test("should init data", () => {
     rlax.initStore({
@@ -106,9 +117,32 @@ describe("setStore tests", () => {
   });
   afterEach(rlax.clear);
 
+  test("should throw when set undefined", () => {
+    expect(() => {
+      rlax.setStore("n", undefined);
+    }).toThrowError("The value setting to 'n' is undefined!");
+  });
+
+  test("should throw when setter returned undefined", () => {
+    expect(() => {
+      rlax.setStore("n", () => undefined);
+    }).toThrowError("The value setting to 'n' is undefined!");
+  });
+
+  test("should throw when set new store after init", () => {
+    expect(() => {
+      rlax.setStore("new store");
+    }).toThrowError("No store named 'new store'!");
+  });
+
   test("should set store", () => {
     rlax.setStore("n", 2);
     expect(_debugGetPrivateState("stores").n.value).toBe(2);
+  });
+
+  test("should set store using callback", () => {
+    rlax.setStore("n", (prev) => prev + 3);
+    expect(_debugGetPrivateState("stores").n.value).toBe(3);
   });
 
   test("should update component that use store", () => {
@@ -168,7 +202,7 @@ describe("useStore tests", () => {
   test("should throw when use uninitial store", () => {
     expect(() => {
       componentUseStore("s");
-    }).toThrowError("No store named s!");
+    }).toThrowError("No store named 's'!");
   });
 
   test("should get store in component", () => {
@@ -222,7 +256,7 @@ describe("persist tests", () => {
     windowEventHandlers["beforeunload"]();
     _debugSetPrivateState("stores", Object.create(null));
     _debugSetPrivateState("storage", null);
-    _debugSetPrivateState("initStoreCalled", false);
+    _debugSetPrivateState("initialized", false);
     clearWindowHandlers();
   }
 

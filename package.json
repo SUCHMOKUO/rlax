@@ -1,6 +1,6 @@
 {
   "name": "rlax",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Rlax is a super easy state with persistence for react.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
