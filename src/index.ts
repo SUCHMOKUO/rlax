@@ -58,7 +58,13 @@ export function initStore(opt: InitStoreOption) {
     throw new Error("Initial data should be an object!");
   }
   for (const [key, val] of Object.entries(opt.data)) {
-    setStore(key, val);
+    if (val === undefined) {
+      throw new TypeError(`The value setting to '${key}' is undefined!`);
+    }
+    privateState.stores[key] = {
+      value: val,
+      renderList: [],
+    };
   }
   persist(opt.persist);
   privateState.initialized = true;
@@ -72,24 +78,14 @@ export function setStore(key: string, val: StoreValue): void;
 export function setStore(key: string, val: any): void {
   const store = privateState.stores[key];
   if (!store) {
-    if (privateState.initialized) {
-      throw new Error(`No store named '${key}'!`);
-    }
-    if (val === undefined) {
-      throw new TypeError(`The value setting to '${key}' is undefined!`);
-    }
-    privateState.stores[key] = {
-      value: val,
-      renderList: [],
-    };
-    return;
+    throw new Error(`No store named '${key}'!`);
   }
   const oldVal = store.value;
   const newVal = typeof val === "function" ? val(oldVal) : val;
   if (newVal === undefined) {
     throw new TypeError(`The value setting to '${key}' is undefined!`);
   }
-  if (oldVal === newVal) {
+  if (Object.is(oldVal, newVal)) {
     return;
   }
   // set new value to store.
@@ -157,16 +153,15 @@ function persist(type: PersistType) {
   }
 
   // register callback to store everything before reload.
-  window.addEventListener("beforeunload", () => {
-    const data = Object.create(null);
-    for (let k in privateState.stores) {
-      data[k] = privateState.stores[k].value;
-    }
-    privateState.storage?.setItem(
-      privateState.storageKey,
-      JSON.stringify(data)
-    );
-  });
+  window.addEventListener("beforeunload", persistToStorage);
+}
+
+function persistToStorage() {
+  const data = Object.create(null);
+  for (let k in privateState.stores) {
+    data[k] = privateState.stores[k].value;
+  }
+  privateState.storage?.setItem(privateState.storageKey, JSON.stringify(data));
 }
 
 export function clear() {
