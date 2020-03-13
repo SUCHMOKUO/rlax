@@ -169,6 +169,7 @@ export function clear() {
   privateState.stores = Object.create(null);
   privateState.storage?.removeItem(privateState.storageKey);
   privateState.storage = null;
+  window.removeEventListener("beforeunload", persistToStorage);
 }
 
 export default {

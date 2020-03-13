@@ -6,8 +6,24 @@ import "jest-localstorage-mock";
 configure({ adapter: new Adapter() });
 
 let windowEventHandlers = Object.create(null);
+
 window.addEventListener = (event, cb) => {
-  windowEventHandlers[event] = cb;
+  const listeners = windowEventHandlers[event];
+  if (Array.isArray(listeners)) {
+    listeners.push(cb);
+  } else {
+    windowEventHandlers[event] = [cb];
+  }
+};
+
+window.removeEventListener = (event, cb) => {
+  const listeners = windowEventHandlers[event];
+  if (Array.isArray(listeners)) {
+    const i = listeners.indexOf(cb);
+    if (i >= 0) {
+      listeners.splice(i, 1);
+    }
+  }
 };
 
 function clearWindowHandlers() {
@@ -253,7 +269,10 @@ describe("useStore tests", () => {
 
 describe("persist tests", () => {
   function reload() {
-    windowEventHandlers["beforeunload"]();
+    const listener = windowEventHandlers["beforeunload"];
+    if (Array.isArray(listener)) {
+      listener.forEach((l) => l());
+    }
     _debugSetPrivateState("stores", Object.create(null));
     _debugSetPrivateState("storage", null);
     _debugSetPrivateState("initialized", false);
@@ -388,5 +407,16 @@ describe("clear tests", () => {
     });
     rlax.clear();
     expect(sessionStorage.removeItem).toHaveBeenLastCalledWith(storageKey);
+  });
+
+  test("should remove unload listener after clear", () => {
+    rlax.initStore({
+      data: {
+        n: 0,
+      },
+      persist: "session",
+    });
+    rlax.clear();
+    expect(windowEventHandlers["beforeunload"]).toHaveLength(0);
   });
 });
