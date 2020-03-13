@@ -164,7 +164,7 @@ describe("setStore tests", () => {
   test("should update component that use store", () => {
     const render = jest.fn();
     const n = _debugGetPrivateState("stores").n;
-    n.renderList.push(render);
+    n.renderSet.add(render);
     rlax.setStore("n", 123);
     expect(n.value).toBe(123);
     expect(render).toHaveBeenCalledTimes(1);
@@ -173,7 +173,7 @@ describe("setStore tests", () => {
   test("should not update component when state not change", () => {
     const render = jest.fn();
     const n = _debugGetPrivateState("stores").n;
-    n.renderList.push(render);
+    n.renderSet.add(render);
     rlax.setStore("n", 0);
     expect(render).not.toHaveBeenCalled();
   });
@@ -181,10 +181,10 @@ describe("setStore tests", () => {
   test("should only update related component", () => {
     const renderN = jest.fn();
     const n = _debugGetPrivateState("stores").n;
-    n.renderList.push(renderN);
+    n.renderSet.add(renderN);
     const renderM = jest.fn();
     const m = _debugGetPrivateState("stores").m;
-    m.renderList.push(renderM);
+    m.renderSet.add(renderM);
     rlax.setStore("n", 123);
     rlax.setStore("n", 231);
     rlax.setStore("n", 41);
@@ -260,10 +260,10 @@ describe("useStore tests", () => {
       return <Fragment></Fragment>;
     }
     const wrapper = mount(<TestComponent />);
-    const renderList = _debugGetPrivateState("stores").n.renderList;
-    expect(renderList).toHaveLength(1);
+    const renderSet = _debugGetPrivateState("stores").n.renderSet;
+    expect(renderSet.size).toBe(1);
     wrapper.unmount();
-    expect(renderList).toHaveLength(0);
+    expect(renderSet.size).toBe(0);
   });
 });
 

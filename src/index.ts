@@ -10,7 +10,7 @@ type StoreValue =
 
 type Store = {
   value: StoreValue;
-  renderList: React.Dispatch<React.SetStateAction<number>>[];
+  renderSet: Set<React.Dispatch<React.SetStateAction<number>>>;
 };
 
 type Stores = {
@@ -63,7 +63,7 @@ export function initStore(opt: InitStoreOption) {
     }
     privateState.stores[key] = {
       value: val,
-      renderList: [],
+      renderSet: new Set(),
     };
   }
   persist(opt.persist);
@@ -91,9 +91,7 @@ export function setStore(key: string, val: any): void {
   // set new value to store.
   store.value = newVal;
   // rerender all components that use this store.
-  for (const render of store.renderList) {
-    render(add);
-  }
+  store.renderSet.forEach((r) => r(add));
 }
 
 function add(x: number) {
@@ -107,18 +105,13 @@ export function useStore(key: string) {
   if (!store) {
     throw new Error(`No store named '${key}'!`);
   }
-  const renderList = store.renderList;
-  if (!renderList.includes(render)) {
-    renderList.push(render);
-  }
+  const renderSet = store.renderSet;
+  renderSet.add(render);
   useEffect(
     () => () => {
-      const index = renderList.indexOf(render);
-      if (index >= 0) {
-        renderList.splice(index, 1);
-      }
+      renderSet.delete(render);
     },
-    [render, renderList]
+    [render, renderSet]
   );
   return store.value;
 }
@@ -147,7 +140,7 @@ function persist(type: PersistType) {
     for (const [k, v] of Object.entries(data)) {
       privateState.stores[k] = {
         value: v as StoreValue,
-        renderList: [],
+        renderSet: new Set(),
       };
     }
   }
@@ -161,6 +154,7 @@ function persistToStorage() {
   for (let k in privateState.stores) {
     data[k] = privateState.stores[k].value;
   }
+  /* istanbul ignore next */
   privateState.storage?.setItem(privateState.storageKey, JSON.stringify(data));
 }
 
@@ -181,7 +175,6 @@ export default {
 
 export function _debugSetPrivateState(key: string, val: any) {
   /* istanbul ignore next */
-
   if (!(key in privateState)) {
     throw new ReferenceError(`No field named '${key}'!`);
   }
@@ -190,7 +183,6 @@ export function _debugSetPrivateState(key: string, val: any) {
 
 export function _debugGetPrivateState(key: string) {
   /* istanbul ignore next */
-
   if (!(key in privateState)) {
     throw new ReferenceError(`No field named '${key}'!`);
   }
