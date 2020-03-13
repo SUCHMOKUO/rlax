@@ -8,9 +8,11 @@ type StoreValue =
   | { [key: string]: StoreValue }
   | StoreValue[];
 
+type RenderFunc = React.Dispatch<React.SetStateAction<number>>;
+
 type Store = {
   value: StoreValue;
-  renderSet: Set<React.Dispatch<React.SetStateAction<number>>>;
+  renderSet: Set<RenderFunc>;
 };
 
 type Stores = {
@@ -91,11 +93,11 @@ export function setStore(key: string, val: any): void {
   // set new value to store.
   store.value = newVal;
   // rerender all components that use this store.
-  store.renderSet.forEach((r) => r(add));
+  store.renderSet.forEach(callRender);
 }
 
-function add(x: number) {
-  return x + 1;
+function callRender(r: RenderFunc) {
+  r((x) => x + 1);
 }
 
 export function useStore(key: string) {
