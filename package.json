@@ -1,6 +1,6 @@
 {
   "name": "rlax",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Rlax is a super easy state with persistence for react.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,6 +25,7 @@
     "state",
     "state management",
     "store",
+    "persist",
     "persistence",
     "Web Storage",
     "localStorage",
