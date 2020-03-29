@@ -1,12 +1,12 @@
 import React, { useState, useDebugValue, useEffect } from "react";
 
-type StoreValue =
-  | number
-  | string
-  | boolean
-  | null
-  | { [key: string]: StoreValue }
-  | StoreValue[];
+type StoreValue = any;
+// | number
+// | string
+// | boolean
+// | null
+// | { [key: string]: StoreValue }
+// | StoreValue[];
 
 type RenderFunc = React.Dispatch<React.SetStateAction<number>>;
 
