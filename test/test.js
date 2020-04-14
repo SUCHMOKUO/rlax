@@ -101,24 +101,6 @@ describe("initStore tests", () => {
 
     expect(_debugGetPrivateState("stores").n.value).toBe(0);
   });
-
-  test("should init once", () => {
-    rlax.initStore({
-      data: {
-        n: 1,
-      },
-      persist: "none",
-    });
-
-    rlax.initStore({
-      data: {
-        n: 2,
-      },
-      persist: "none",
-    });
-
-    expect(_debugGetPrivateState("stores").n.value).toBe(1);
-  });
 });
 
 describe("setStore tests", () => {
@@ -133,6 +115,11 @@ describe("setStore tests", () => {
   });
   afterEach(rlax.clear);
 
+  test("should create store when no store matched", () => {
+    rlax.setStore("a", 2);
+    expect(_debugGetPrivateState("stores").a.value).toBe(2);
+  });
+
   test("should throw when set undefined", () => {
     expect(() => {
       rlax.setStore("n", undefined);
@@ -143,12 +130,6 @@ describe("setStore tests", () => {
     expect(() => {
       rlax.setStore("n", () => undefined);
     }).toThrowError("The value setting to 'n' is undefined!");
-  });
-
-  test("should throw when set new store after init", () => {
-    expect(() => {
-      rlax.setStore("new store");
-    }).toThrowError("No store named 'new store'!");
   });
 
   test("should set store", () => {
@@ -215,12 +196,6 @@ describe("useStore tests", () => {
   });
   afterEach(rlax.clear);
 
-  test("should throw when use uninitial store", () => {
-    expect(() => {
-      componentUseStore("s");
-    }).toThrowError("No store named 's'!");
-  });
-
   test("should get store in component", () => {
     expect(componentUseStore("n").val.n).toBe(233);
   });
@@ -232,6 +207,16 @@ describe("useStore tests", () => {
     expect(spy).toHaveBeenCalledTimes(1);
     rlax.setStore("n", 321);
     expect(val.n).toBe(321);
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  test("should useStore works before set", () => {
+    const spy = jest.fn();
+    const val = componentUseStore("a", spy).val;
+    expect(val.a).toBe(undefined);
+    expect(spy).toHaveBeenCalledTimes(1);
+    rlax.setStore("a", 333);
+    expect(val.a).toBe(333);
     expect(spy).toHaveBeenCalledTimes(2);
   });
 
@@ -275,7 +260,6 @@ describe("persist tests", () => {
     }
     _debugSetPrivateState("stores", Object.create(null));
     _debugSetPrivateState("storage", null);
-    _debugSetPrivateState("initialized", false);
     clearWindowHandlers();
   }
 
@@ -407,16 +391,5 @@ describe("clear tests", () => {
     });
     rlax.clear();
     expect(sessionStorage.removeItem).toHaveBeenLastCalledWith(storageKey);
-  });
-
-  test("should remove unload listener after clear", () => {
-    rlax.initStore({
-      data: {
-        n: 0,
-      },
-      persist: "session",
-    });
-    rlax.clear();
-    expect(windowEventHandlers["beforeunload"]).toHaveLength(0);
   });
 });

@@ -101,7 +101,5 @@ import rlax from "rlax";
 // this will delete the the imformation Rlax set
 // in the web storage of your browser (if persist is set),
 // and all the data in memory.
-// you need to manually call initStore after calling clear,
-// if you want to use it again.
 rlax.clear();
 ```

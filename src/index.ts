@@ -40,13 +40,18 @@ const privateState: IPrivateState = Object.create(null);
 
 privateState.stores = Object.create(null);
 privateState.storage = null;
-privateState.initialized = false;
 privateState.storageKey = "react-rlax-store";
 
+function createNewStore(key: string, val?: StoreValue) {
+  const store: Store = {
+    value: val,
+    renderSet: new Set(),
+  };
+  privateState.stores[key] = store;
+  return store;
+}
+
 export function initStore(opt: InitStoreOption) {
-  if (privateState.initialized) {
-    return;
-  }
   if (!opt) {
     throw new Error("You need to pass an option object to initStore!");
   }
@@ -63,13 +68,9 @@ export function initStore(opt: InitStoreOption) {
     if (val === undefined) {
       throw new TypeError(`The value setting to '${key}' is undefined!`);
     }
-    privateState.stores[key] = {
-      value: val,
-      renderSet: new Set(),
-    };
+    createNewStore(key, val);
   }
   persist(opt.persist);
-  privateState.initialized = true;
 }
 
 export function setStore(
@@ -78,9 +79,9 @@ export function setStore(
 ): void;
 export function setStore(key: string, val: StoreValue): void;
 export function setStore(key: string, val: any): void {
-  const store = privateState.stores[key];
+  let store = privateState.stores[key];
   if (!store) {
-    throw new Error(`No store named '${key}'!`);
+    store = createNewStore(key);
   }
   const oldVal = store.value;
   const newVal = typeof val === "function" ? val(oldVal) : val;
@@ -103,9 +104,9 @@ function callRender(r: RenderFunc) {
 export function useStore(key: string) {
   const render = useState(0)[1];
   useDebugValue(`Store of '${key}'`);
-  const store = privateState.stores[key];
+  let store = privateState.stores[key];
   if (!store) {
-    throw new Error(`No store named '${key}'!`);
+    store = createNewStore(key);
   }
   const renderSet = store.renderSet;
   renderSet.add(render);
@@ -161,11 +162,8 @@ function persistToStorage() {
 }
 
 export function clear() {
-  privateState.initialized = false;
   privateState.stores = Object.create(null);
   privateState.storage?.removeItem(privateState.storageKey);
-  privateState.storage = null;
-  window.removeEventListener("beforeunload", persistToStorage);
 }
 
 export default {
