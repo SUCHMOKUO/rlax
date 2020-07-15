@@ -2,6 +2,7 @@ test/
 coverage/
 src/
 demo/
+dist/demo
 .*
 package-lock.json
 tsconfig.json
