@@ -37,7 +37,7 @@ npm install rlax --save
 Initialize store In the entry file of your project.
 
 ```js
-import rlax from "rlax";
+import { initStore } from "rlax";
 
 rlax.initStore({
   // initialize your data here.
@@ -110,10 +110,10 @@ setStore("key1", (prev) => {
 If you want to clear all the things in the store, just call:
 
 ```js
-import rlax from "rlax";
+import { clear } from "rlax";
 
 // this will delete the the imformation Rlax set
 // in the web storage of your browser (if persist is set),
 // and all the data in memory.
-rlax.clear();
+clear();
 ```

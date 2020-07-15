@@ -174,14 +174,6 @@ export function clear() {
   privateState.storage?.removeItem(privateState.storageKey);
 }
 
-export default {
-  initStore,
-  setStore,
-  useStore,
-  getStore,
-  clear,
-};
-
 export function _debugSetPrivateState(key: string, val: any) {
   /* istanbul ignore next */
   if (!(key in privateState)) {
