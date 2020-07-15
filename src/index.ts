@@ -119,6 +119,14 @@ export function useStore(key: string) {
   return store.value;
 }
 
+export function getStore(key: string) {
+  const store = privateState.stores[key];
+  if (!store) {
+    return undefined;
+  }
+  return store.value;
+}
+
 function persist(type: PersistType) {
   switch (type) {
     case "none":
@@ -170,6 +178,7 @@ export default {
   initStore,
   setStore,
   useStore,
+  getStore,
   clear,
 };
 

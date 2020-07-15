@@ -71,6 +71,20 @@ function MyComponent() {
 }
 ```
 
+Or just get the data if it's outside the component.
+
+```js
+import { getStore } from "rlax";
+
+const value1 = getStore("key1");
+
+if (typeof value1 !== undefined) {
+  // use your value.
+}
+...
+
+```
+
 Set data when you want to change it.
 
 ```js

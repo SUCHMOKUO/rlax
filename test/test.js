@@ -252,6 +252,26 @@ describe("useStore tests", () => {
   });
 });
 
+describe("getStore tests", () => {
+  beforeEach(() => {
+    rlax.initStore({
+      data: {
+        n: 423,
+      },
+      persist: "none",
+    });
+  });
+  afterEach(rlax.clear);
+
+  test("should get store", () => {
+    expect(rlax.getStore("n")).toBe(423);
+  });
+
+  test("should get undefined when no store", () => {
+    expect(rlax.getStore("a")).toBe(undefined);
+  });
+});
+
 describe("persist tests", () => {
   function reload() {
     const listener = windowEventHandlers["beforeunload"];
